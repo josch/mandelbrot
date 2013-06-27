@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     mpfr_t temp1, temp2;
     mpfr_init2(temp1, 300);
     mpfr_init2(temp2, 300);
-    //long double eps = 1e-17;
+    long double eps = 1e-17;
     mpfr_t Q1LOG2, LOG2;
     mpfr_init_set_str(Q1LOG2, "1.44269504088896340735992468100189213742664595415299", 10, MPFR_RNDN);
     mpfr_init_set_str(LOG2, "0.69314718055994530941723212145817656807550013436026", 10, MPFR_RNDN);
@@ -23,8 +23,18 @@ int main(int argc, char **argv) {
     char* image = malloc(width*height*3);
     unsigned int x, y;
     mpfr_t centerx, centery;
-    mpfr_init_set_str(centerx, argv[3], 10, MPFR_RNDN);
-    mpfr_init_set_str(centery, argv[4], 10, MPFR_RNDN);
+    mpfr_init2(centerx, 300);
+    mpfr_init2(centery, 300);
+    mpfr_set_str(centerx, argv[3], 10, MPFR_RNDN);
+    mpfr_set_str(centery, argv[4], 10, MPFR_RNDN);
+    /*mpfr_set_d(centerx, -0.7436438870371587, MPFR_RNDN);
+    mpfr_add_d(centerx, centerx, -3.628952515063387E-17, MPFR_RNDN);
+    mpfr_set_d(centery, 0.13182590420531198, MPFR_RNDN);
+    mpfr_add_d(centery, centery, -1.2892807754956678E-17, MPFR_RNDN);
+    mpfr_out_str(stderr, 10, 0, centerx, MPFR_RNDN);
+    fputs("\n", stderr);
+    mpfr_out_str(stderr, 10, 0, centery, MPFR_RNDN);
+    fputs("\n", stderr);*/
     double bailout = 4; // the distance must not be greater than 2 (4 = 2*2)
     mpfr_t logLogBailout;
     mpfr_init2(logLogBailout, 300);
@@ -89,11 +99,12 @@ int main(int argc, char **argv) {
             mpfr_set(zy, py, MPFR_RNDN);
             unsigned long i;
             bool inside = true;
-            /*int check = 3;
-            int whenupdate = 10;*/
+            int check = 3;
+            int whenupdate = 10;
             mpfr_set_d(hx, 0, MPFR_RNDN);
             mpfr_set_d(hy, 0, MPFR_RNDN);
             for (i = 1; i <= maxiter; i++) {
+            //for (i = 1; i <= 50000; i++) {
                 //xx = zx * zx;
                 mpfr_mul(xx, zx, zx, MPFR_RNDN);
                 //yy = zy * zy;
@@ -115,7 +126,7 @@ int main(int argc, char **argv) {
 
                 // period checking
                 // d = zx - hx;
-                /*mpfr_sub(d, zx, hx, MPFR_RNDN);
+                mpfr_sub(d, zx, hx, MPFR_RNDN);
                 mpfr_abs(d, d, MPFR_RNDN);
                 if (mpfr_cmp_d(d, eps) < 0) {
                     // d = zy - hy;
@@ -136,7 +147,7 @@ int main(int argc, char **argv) {
                     // period = 0;
                     mpfr_set(hx, zx, MPFR_RNDN);
                     mpfr_set(hy, zy, MPFR_RNDN);
-                }*/
+                }
             }
 
             if (inside) {
