@@ -11,15 +11,11 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s width height centerx centery magnification", argv[0]);
         return 1;
     }
-    mpfr_t temp1, temp2;
+    mpfr_t temp1;
     mpfr_init2(temp1, 300);
-    mpfr_init2(temp2, 300);
-    long double eps = 1e-17;
-    mpfr_t Q1LOG2, LOG2;
-    mpfr_init2(Q1LOG2, 300);
-    mpfr_init2(LOG2, 300);
-    mpfr_set_str(Q1LOG2, "1.44269504088896340735992468100189213742664595415299", 10, MPFR_RNDN);
-    mpfr_set_str(LOG2, "0.69314718055994530941723212145817656807550013436026", 10, MPFR_RNDN);
+    double eps = 1e-17;
+    double Q1LOG2 = 1.44269504088896340735992468100189213742664595415299;
+    double LOG2 = 0.69314718055994530941723212145817656807550013436026;
     unsigned int width = atoi(argv[1]);
     unsigned int height = atoi(argv[2]);
     char* image = malloc(width*height*3);
@@ -29,21 +25,8 @@ int main(int argc, char **argv) {
     mpfr_init2(centery, 300);
     mpfr_set_str(centerx, argv[3], 10, MPFR_RNDN);
     mpfr_set_str(centery, argv[4], 10, MPFR_RNDN);
-    /*mpfr_set_d(centerx, -0.7436438870371587, MPFR_RNDN);
-    mpfr_add_d(centerx, centerx, -3.628952515063387E-17, MPFR_RNDN);
-    mpfr_set_d(centery, 0.13182590420531198, MPFR_RNDN);
-    mpfr_add_d(centery, centery, -1.2892807754956678E-17, MPFR_RNDN);
-    mpfr_out_str(stderr, 10, 0, centerx, MPFR_RNDN);
-    fputs("\n", stderr);
-    mpfr_out_str(stderr, 10, 0, centery, MPFR_RNDN);
-    fputs("\n", stderr);*/
     double bailout = 4; // the distance must not be greater than 2 (4 = 2*2)
-    mpfr_t logLogBailout;
-    mpfr_init2(logLogBailout, 300);
-    // logLogBailout = log(log(bailout));
-    mpfr_set_d(logLogBailout, bailout, MPFR_RNDN);
-    mpfr_log(logLogBailout, logLogBailout, MPFR_RNDN);
-    mpfr_log(logLogBailout, logLogBailout, MPFR_RNDN);
+    double logLogBailout = log(log(bailout));
     mpfr_t magn;
     mpfr_init2(magn, 300);
     mpfr_set_str(magn, argv[5], 10, MPFR_RNDN);
@@ -70,21 +53,16 @@ int main(int argc, char **argv) {
     mpfr_div_ui(temp1, temp1, width, MPFR_RNDN);
     mpfr_mul(y2, y2, temp1, MPFR_RNDN);
     mpfr_add(y2, y2, centery, MPFR_RNDN);
-    mpfr_t px, py, zx, zy, xx, yy, r, c;
+    mpfr_t px, py, zx, zy, xx, yy;
     mpfr_init2(px, 300);
     mpfr_init2(py, 300);
     mpfr_init2(zx, 300);
     mpfr_init2(zy, 300);
     mpfr_init2(xx, 300);
     mpfr_init2(yy, 300);
-    mpfr_init2(r, 300);
-    mpfr_init2(c, 300);
-    int idx;
-    int imgidx = 0;
-    mpfr_t hx, hy, d;
-    mpfr_init2(hx, 300);
-    mpfr_init2(hy, 300);
-    mpfr_init2(d, 300);
+    unsigned int idx;
+    unsigned int imgidx = 0;
+    double hx, hy, d;
     int foundperiods = 0;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
@@ -104,8 +82,9 @@ int main(int argc, char **argv) {
             bool inside = true;
             int check = 3;
             int whenupdate = 10;
-            mpfr_set_d(hx, 0, MPFR_RNDN);
-            mpfr_set_d(hy, 0, MPFR_RNDN);
+            hx = 0;
+            hy = 0;
+            double zxd, zyd;
             for (i = 1; i <= maxiter; i++) {
             //for (i = 1; i <= 50000; i++) {
                 //xx = zx * zx;
@@ -128,14 +107,12 @@ int main(int argc, char **argv) {
                 mpfr_add(zx, zx, px, MPFR_RNDN);
 
                 // period checking
-                // d = zx - hx;
-                mpfr_sub(d, zx, hx, MPFR_RNDN);
-                mpfr_abs(d, d, MPFR_RNDN);
-                if (mpfr_cmp_d(d, eps) < 0) {
-                    // d = zy - hy;
-                    mpfr_sub(d, zy, hy, MPFR_RNDN);
-                    mpfr_abs(d, d, MPFR_RNDN);
-                    if (mpfr_cmp_d(d, eps) < 0) {
+                zxd = mpfr_get_d(zx, MPFR_RNDN);
+                d = zxd - hx;
+                if (d > 0.0 ? d < eps : d > -eps) {
+                    zyd = mpfr_get_d(zy, MPFR_RNDN);
+                    d = zyd - hy;
+                    if (d > 0.0 ? d < eps : d > -eps) {
                         // Period found.
                         foundperiods++;
                         break;
@@ -148,8 +125,10 @@ int main(int argc, char **argv) {
                         check++;
                     }
                     // period = 0;
-                    mpfr_set(hx, zx, MPFR_RNDN);
-                    mpfr_set(hy, zy, MPFR_RNDN);
+                    zxd = mpfr_get_d(zx, MPFR_RNDN);
+                    zyd = mpfr_get_d(zy, MPFR_RNDN);
+                    hx = zxd;
+                    hy = zyd;
                 }
             }
 
@@ -158,26 +137,11 @@ int main(int argc, char **argv) {
                 image[imgidx++] = 0;
                 image[imgidx++] = 0;
             } else {
-                //r = sqrtl(zx*zx + zy*zy);
-                mpfr_mul(temp1, zx, zx, MPFR_RNDN);
-                mpfr_mul(temp2, zy, zy, MPFR_RNDN);
-                mpfr_add(temp1, temp1, temp2, MPFR_RNDN);
-                mpfr_sqrt(r, temp1, MPFR_RNDN);
-                //c = i - 1.28 + (logLogBailout - logl(logl(r))) * Q1LOG2;
-                mpfr_log(r, r, MPFR_RNDN);
-                mpfr_log(r, r, MPFR_RNDN);
-                mpfr_sub(c, logLogBailout, r, MPFR_RNDN);
-                mpfr_mul(c, c, Q1LOG2, MPFR_RNDN);
-                mpfr_add_d(c, c, i - 1.28, MPFR_RNDN);
-                //idx = fmodl((logl(c/64+1)/LOG2+0.45), 1)*GRADIENTLENGTH + 0.5;
-                mpfr_div_ui(c, c, 64, MPFR_RNDN);
-                mpfr_add_ui(c, c, 1, MPFR_RNDN);
-                mpfr_log(c, c, MPFR_RNDN);
-                mpfr_div(c, c, LOG2, MPFR_RNDN);
-                mpfr_add_d(c, c, 0.45, MPFR_RNDN);
-                mpfr_frac(c, c, MPFR_RNDN);
-                mpfr_mul_d(c, c, GRADIENTLENGTH, MPFR_RNDN);
-                idx = mpfr_get_ui(c, MPFR_RNDN);
+                zxd = mpfr_get_d(zx, MPFR_RNDN);
+                zyd = mpfr_get_d(zy, MPFR_RNDN);
+                double r = sqrt(zxd*zxd + zyd*zyd);
+                double c = i - 1.28 + (logLogBailout - log(log(r))) * Q1LOG2;
+                idx = fmod((log(c/64+1)/LOG2+0.45), 1)*GRADIENTLENGTH + 0.5;
                 image[imgidx++] = colors[idx][0];
                 image[imgidx++] = colors[idx][1];
                 image[imgidx++] = colors[idx][2];
