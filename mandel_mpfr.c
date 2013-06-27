@@ -16,8 +16,10 @@ int main(int argc, char **argv) {
     mpfr_init2(temp2, 300);
     long double eps = 1e-17;
     mpfr_t Q1LOG2, LOG2;
-    mpfr_init_set_str(Q1LOG2, "1.44269504088896340735992468100189213742664595415299", 10, MPFR_RNDN);
-    mpfr_init_set_str(LOG2, "0.69314718055994530941723212145817656807550013436026", 10, MPFR_RNDN);
+    mpfr_init2(Q1LOG2, 300);
+    mpfr_init2(LOG2, 300);
+    mpfr_set_str(Q1LOG2, "1.44269504088896340735992468100189213742664595415299", 10, MPFR_RNDN);
+    mpfr_set_str(LOG2, "0.69314718055994530941723212145817656807550013436026", 10, MPFR_RNDN);
     unsigned int width = atoi(argv[1]);
     unsigned int height = atoi(argv[2]);
     char* image = malloc(width*height*3);
@@ -43,7 +45,8 @@ int main(int argc, char **argv) {
     mpfr_log(logLogBailout, logLogBailout, MPFR_RNDN);
     mpfr_log(logLogBailout, logLogBailout, MPFR_RNDN);
     mpfr_t magn;
-    mpfr_init_set_str(magn, argv[5], 10, MPFR_RNDN);
+    mpfr_init2(magn, 300);
+    mpfr_set_str(magn, argv[5], 10, MPFR_RNDN);
     // maxiter = width * sqrt(magn);
     mpfr_sqrt(temp1, magn, MPFR_RNDN);
     unsigned long maxiter = width * mpfr_get_ui(temp1, MPFR_RNDN);
