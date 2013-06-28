@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     mpfr_init2(centery, 300);
     mpfr_set_str(centerx, argv[3], 10, MPFR_RNDN);
     mpfr_set_str(centery, argv[4], 10, MPFR_RNDN);
-    double bailout = 4; // the distance must not be greater than 2 (4 = 2*2)
+    double bailout = 128; // with a smaller value there are lines on magn=1
     double logLogBailout = log(log(bailout));
     mpfr_t magn;
     mpfr_init2(magn, 300);

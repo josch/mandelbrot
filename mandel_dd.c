@@ -22,12 +22,12 @@ int main(int argc, char **argv) {
     DoubleDouble centerx, centery;
     centerx = dd_new(-0.7436438870371587, -3.628952515063387E-17);
     centery = dd_new(0.13182590420531198, -1.2892807754956678E-17);
-    double bailout = 4; // the distance must not be greater than 2 (4 = 2*2)
+    double bailout = 128; // with a smaller value there are lines on magn=1
     double logLogBailout = log(log(bailout));
     DoubleDouble magn = dd_new(strtod(argv[5], NULL), 0);
-    // maxiter = width * sqrt(magn);
+    /*// maxiter = width * sqrt(magn);
     temp1 = dd_sqrt(magn);
-    unsigned long maxiter = width * dd_get_ui(temp1);
+    unsigned long maxiter = width * dd_get_ui(temp1);*/
     DoubleDouble x2, y2, x0d, y1d;
     // x0d = 4 / magn / width;
     x0d = dd_ui_div(4, magn);
