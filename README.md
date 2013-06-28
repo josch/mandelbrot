@@ -1,4 +1,5 @@
-= Introduction =
+Introduction
+============
 
 Calculating Mandelbrot using different ways. It tries to imitate the Mandelbrot
 calculation by Zom-B but be faster in doing so.
@@ -12,27 +13,35 @@ The generator used for this version is available here:
 
 https://github.com/josch/mandelbrot_zomb
 
-= Overview =
+Overview
+========
 
 mandel:
-	straight forward "long double" based mandelbrot
-	this is obviously the fastest implementation but has limited precision
-mandel_mpfr:
-	mandelbrot using the arbitrary precision mpfr library
-mandel_quad:
-	mandelbrot using gcc libquad
-mandel_dd:
-	mandelbrot using custom double double math
-	this is the fastest implementation given double double precision
-mandel_dd_aa:
-	with antialiasing
-	it is more than three times faster than the Zom-B version (see below)
+ - straight forward "long double" based mandelbrot
+ - this is obviously the fastest implementation but has limited precision
 
-= How to compile =
+mandel_mpfr:
+ - mandelbrot using the arbitrary precision mpfr library
+
+mandel_quad:
+ - mandelbrot using gcc libquad
+
+mandel_dd:
+ - mandelbrot using custom double double math
+ - this is the fastest implementation given double double precision
+
+mandel_dd_aa:
+ - with antialiasing
+ - it is more than three times faster than the Zom-B version (see below)
+
+
+How to compile
+==============
 
 Compile by running `make`.
 
-= How to execute =
+How to execute
+==============
 
 Each of the tools takes as arguments the width, height, coordinates and
 magnification. Output is in PPM format on standard output.
@@ -50,25 +59,26 @@ And even compress it further by doing:
 
 = How to generate zoom animation =
 
-The shell script (with a small python helper) run.sh will generate and execute a
-list of commands to create a zooming sequence of images.
+The shell script (with a small python helper) `run.sh` will generate and
+execute a list of commands to create a zooming sequence of images.
 
 You can create a video of the resulting sequence using:
 
 	$ avconv -i %05d.png out.mp4
 
-= Benchmark =
+Benchmark
+=========
 
 Benchmark against mandelbrot computation by Zom-B:
 
 at zoom coordinates:
-	x = -0.743643887037158704752191506114774
-	y = 0.131825904205311970493132056385139
+ - x = -0.743643887037158704752191506114774
+ - y = 0.131825904205311970493132056385139
 
 1 to 1e32 in 100 steps at 320x240 and no AA took
-	mandel_dd   1:28 h
-        mandel_zomb 2:45 h
+ - mandel_dd   1:28 h
+ - mandel_zomb 2:45 h
 
 1.0e17 at 1920x1080 with 5xAA took
-        mandel_dd_aa 2:38 h
-	mandel_zomb  8:40 h
+ - mandel_dd_aa 2:38 h
+ - mandel_zomb  8:40 h
