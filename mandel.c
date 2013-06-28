@@ -4,20 +4,24 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc != 6) {
+        fprintf(stderr, "usage: %s width height centerx centery magnification", argv[0]);
+        return 1;
+    }
     long double eps = 1e-17;
     long double Q1LOG2 = 1.44269504088896340735992468100189213742664595415299;
     long double LOG2 = 0.69314718055994530941723212145817656807550013436026;
-    int width = 640;
-    int height = 480;
+    int width = atoi(argv[1]);
+    int height = atoi(argv[2]);
     char* image = malloc(width*height*3);
     int x, y;
-    long double centerx = -0.743643887037158704752191506114774;
-    long double centery = 0.131825904205311970493132056385139;
+    long double centerx = strtold(argv[3], NULL);
+    long double centery = strtold(argv[4], NULL);
     long double bailout = 128;
     long double logLogBailout = log(log(bailout));
     int foundperiods = 0;
-    long double magn = 1e18;
+    long double magn = strtold(argv[5], NULL);
     long maxiter = width * sqrt(magn);
     long double x0d = 4 / magn / width;
     long double x2 = -2 / magn + centerx;
