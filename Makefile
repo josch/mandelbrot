@@ -3,3 +3,4 @@ all:
 	gcc -O3 -Wall -lmpfr -lm mandel_mpfr.c -o mandel_mpfr
 	gcc -O3 -Wall -lm mandel.c -o mandel
 	gcc -O3 -Wall -lm mandel_dd.c -o mandel_dd
+	gcc -O3 -Wall -lm mandel_dd_aa.c -o mandel_dd_aa

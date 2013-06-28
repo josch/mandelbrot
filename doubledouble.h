@@ -118,6 +118,10 @@ inline DoubleDouble dd_mul_ui(DoubleDouble num1, unsigned int num2) {
     return dd_mul(num1, dd_new(num2, 0));
 }
 
+inline DoubleDouble dd_mul_d(DoubleDouble num1, double num2) {
+    return dd_mul(num1, dd_new(num2, 0));
+}
+
 inline DoubleDouble dd_sub(DoubleDouble num1, DoubleDouble num2) {
     double a, b, c, d, e, f, g;
     g = num1.lo - num2.lo;
