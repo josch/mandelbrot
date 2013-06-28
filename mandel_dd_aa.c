@@ -7,10 +7,20 @@
 #include "doubledouble.h"
 
 DoubleDouble x2, y2, x0d, y1d;
-double bailout = 4; // the distance must not be greater than 2 (4 = 2*2)
+double Q1LOG2 = 1.44269504088896340735992468100189213742664595415299;
+double LOG2 = 0.69314718055994530941723212145817656807550013436026;
+double bailout = 128; // with a smaller value there are lines on magn=1
 double eps = 1e-17;
+double logLogBailout;
 
-void calculate_pixel(double x, double y, unsigned long *lastit, double *zxd, double *zyd, bool *inside) {
+inline int getcoloridx(unsigned long lastit, double zxd, double zyd) {
+    double r, c;
+    r = sqrt(zxd*zxd + zyd*zyd);
+    c = lastit - 1.28 + (logLogBailout - log(log(r))) * Q1LOG2;
+    return fmod((log(c/64+1)/LOG2+0.45), 1)*GRADIENTLENGTH + 0.5;
+}
+
+inline void calculate_pixel(double x, double y, unsigned long *lastit, double *zxd, double *zyd, bool *inside) {
     DoubleDouble px, py, zx, zy, xx, yy;
     //px = x*x0d + x2;
     px = dd_mul_d(x0d, x);
@@ -79,8 +89,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     DoubleDouble temp1;
-    double Q1LOG2 = 1.44269504088896340735992468100189213742664595415299;
-    double LOG2 = 0.69314718055994530941723212145817656807550013436026;
     unsigned int width = atoi(argv[1]);
     unsigned int height = atoi(argv[2]);
     unsigned char* tmpimage = malloc(width*height*3);
@@ -89,11 +97,11 @@ int main(int argc, char **argv) {
     DoubleDouble centerx, centery;
     centerx = dd_new(-0.7436438870371587, -3.628952515063387E-17);
     centery = dd_new(0.13182590420531198, -1.2892807754956678E-17);
-    double logLogBailout = log(log(bailout));
+    logLogBailout = log(log(bailout));
     DoubleDouble magn = dd_new(strtod(argv[5], NULL), 0);
-    // maxiter = width * sqrt(magn);
+    /*// maxiter = width * sqrt(magn);
     temp1 = dd_sqrt(magn);
-    unsigned long maxiter = width * dd_get_ui(temp1);
+    unsigned long maxiter = width * dd_get_ui(temp1);*/
     // x0d = 4 / magn / width;
     x0d = dd_ui_div(4, magn);
     x0d = dd_div_ui(x0d, width);
@@ -116,7 +124,7 @@ int main(int argc, char **argv) {
     bool inside;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
-            fprintf(stderr, "\r%f %%", (float)imgidx/(width*height*3)*100);
+            fprintf(stderr, "\rR: %f %%", (float)imgidx/(width*height*3)*100);
             calculate_pixel(x, y, &lastit, &zxd, &zyd, &inside);
 
             if (inside) {
@@ -124,9 +132,7 @@ int main(int argc, char **argv) {
                 tmpimage[imgidx++] = 0;
                 tmpimage[imgidx++] = 0;
             } else {
-                double r = sqrt(zxd*zxd + zyd*zyd);
-                double c = lastit - 1.28 + (logLogBailout - log(log(r))) * Q1LOG2;
-                idx = fmod((log(c/64+1)/LOG2+0.45), 1)*GRADIENTLENGTH + 0.5;
+                idx = getcoloridx(lastit, zxd, zyd);
                 tmpimage[imgidx++] = colors[idx][0];
                 tmpimage[imgidx++] = colors[idx][1];
                 tmpimage[imgidx++] = colors[idx][2];
@@ -141,14 +147,16 @@ int main(int argc, char **argv) {
     int aaarea = aafactor * aafactor;
     double aafactorinv = 1.0/aafactor;
     int xi, yi;
+    unsigned int val1, val2, val3;
+    double dx, dy;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
-            fprintf(stderr, "\r%f %%", (float)imgidx/(width*height*3)*100);
-            unsigned int val1 = tmpimage[imgidx++];
-            unsigned int val2 = tmpimage[imgidx++];
-            unsigned int val3 = tmpimage[imgidx++];
+            fprintf(stderr, "\rAA: %f %%", (float)imgidx/(width*height*3)*100);
+            val1 = tmpimage[imgidx++];
+            val2 = tmpimage[imgidx++];
+            val3 = tmpimage[imgidx++];
             // if pixel is neither at the border nor are its four neighbors
-            // different, copy value and continue
+            // different, copy value and continue without antialiasing it
             if (x != 0 && y != 0 && x != width -1 && y != height -1
              && tmpimage[(y+1)*width*3+x*3+0] == val1
              && tmpimage[(y+1)*width*3+x*3+1] == val2
@@ -170,15 +178,13 @@ int main(int argc, char **argv) {
 
             // otherwise do antialiasing
             for (xi = -aareach; xi <= aareach; xi++) {
-                double dx = xi*aafactorinv;
+                dx = xi*aafactorinv;
                 for (yi = -aareach; yi <= aareach; yi++) {
-                    double dy = yi*aafactorinv;
+                    dy = yi*aafactorinv;
                     if ((xi | yi) != 0) {
                         calculate_pixel(x+dx, y+dy, &lastit, &zxd, &zyd, &inside);
                         if (!inside) {
-                            double r = sqrt(zxd*zxd + zyd*zyd);
-                            double c = lastit - 1.28 + (logLogBailout - log(log(r))) * Q1LOG2;
-                            idx = fmod((log(c/64+1)/LOG2+0.45), 1)*GRADIENTLENGTH + 0.5;
+                            idx = getcoloridx(lastit, zxd, zyd);
                             val1 += colors[idx][0];
                             val2 += colors[idx][1];
                             val3 += colors[idx][2];
