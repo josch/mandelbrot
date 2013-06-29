@@ -64,7 +64,11 @@ execute a list of commands to create a zooming sequence of images.
 
 You can create a video of the resulting sequence using:
 
-	$ avconv -i %05d.png out.mp4
+	$ avconv -i out_%05d.png out.mp4
+
+Or a gif animation by using:
+
+	$ convert -delay 20 -loop 0 out_*.png out.gif
 
 Benchmark
 =========
